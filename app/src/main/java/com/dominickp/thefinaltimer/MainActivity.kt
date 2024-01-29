@@ -42,10 +42,11 @@ fun WorkoutTimer() {
                 val workSeconds = workTime.toIntOrNull() ?: 0
                 timer = createTimer(
                     duration = workSeconds * 1000L,
-                    onTick = { timerText = it },
+                    onTick = { timerText = it }, // Display seconds only
                     onFinish = {
                         timerState = "Rest"
                         timerText = ""
+                        currentInterval++
                     }
                 ).start()
             }
@@ -54,10 +55,9 @@ fun WorkoutTimer() {
                 val restSeconds = restTime.toIntOrNull() ?: 0
                 timer = createTimer(
                     duration = restSeconds * 1000L,
-                    onTick = { timerText = it },
+                    onTick = { timerText = it }, // Display seconds only
                     onFinish = {
                         if (currentInterval < (intervals.toIntOrNull() ?: 0)) {
-                            currentInterval++
                             timerState = "Work"
                             timerText = ""
                         } else {
@@ -108,8 +108,9 @@ fun WorkoutTimer() {
 
             Button(onClick = {
                 if (timerState == "Workout Timer") {
-                    currentInterval = 1
+                    currentInterval = 0
                     timerState = "Work"
+                    timerText = workTime // Set initial timer text to the full workTime
                 } else {
                     timer?.cancel()
                     currentInterval = 1
@@ -127,9 +128,7 @@ fun createTimer(duration: Long, onTick: (String) -> Unit, onFinish: () -> Unit):
     return object : CountDownTimer(duration, 1000) {
         override fun onTick(millisUntilFinished: Long) {
             val secondsLeft = millisUntilFinished / 1000
-            val minutes = secondsLeft / 60
-            val seconds = secondsLeft % 60
-            val formattedTime = String.format("%02d:%02d", minutes, seconds)
+            val formattedTime = "${(secondsLeft % 60)}" // Extract seconds and add "s" suffix
             onTick(formattedTime)
         }
 
@@ -138,4 +137,5 @@ fun createTimer(duration: Long, onTick: (String) -> Unit, onFinish: () -> Unit):
         }
     }
 }
+
 
