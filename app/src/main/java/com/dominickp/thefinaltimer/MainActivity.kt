@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.dominickp.thefinaltimer.ui.theme.TheFinalTimerTheme
+import android.util.Log
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+var timer: CountDownTimer? = null
 
 @Composable
 fun WorkoutTimer() {
@@ -32,7 +34,6 @@ fun WorkoutTimer() {
     var timerState by remember { mutableStateOf("Workout Timer") }
     var backgroundColor by remember { mutableStateOf(Color.White) }
     var timerText by remember { mutableStateOf("") }
-    var timer: CountDownTimer? = null
 
     LaunchedEffect(key1 = currentInterval, key2 = timerState) {
         timer?.cancel()
@@ -111,8 +112,15 @@ fun WorkoutTimer() {
                 if (timerState == "Workout Timer") {
                     currentInterval = 0
                     timerState = "Work"
+                    timerState = "Work"
                 } else {
-                    timer?.cancel()
+
+                    try {
+                        timer?.cancel()
+                    } catch (e: Exception) {
+                        // Handle any exceptions that occur during timer cancelation
+                        Log.e("TimerDebug", "Error canceling timer: ${e.message}")
+                    }
                     currentInterval = 0
                     timerState = "Workout Timer"
                     backgroundColor = Color.White
