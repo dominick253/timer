@@ -15,7 +15,8 @@ import android.util.Log
 import androidx.compose.material3.Text
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.MaterialTheme
-
+import android.content.Context
+import android.media.MediaPlayer
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +54,8 @@ fun WorkoutTimer() {
                         timerState = "Rest"
                         timerText = ""
                         currentInterval++
+                        soundPlayer.playSound(R.raw.one_beep)
+
                     }
                 ).start()
             }
@@ -158,4 +161,13 @@ fun createTimer(duration: Long, onTick: (String) -> Unit, onFinish: () -> Unit):
     }
 }
 
+class SoundPlayer(context: Context) {
+    private val mediaPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.one_beep)
 
+    fun playSound(resourceId: Int) {
+        mediaPlayer.reset()
+        mediaPlayer.setDataSource(context, resourceId)
+        mediaPlayer.prepare()
+        mediaPlayer.start()
+    }
+}
