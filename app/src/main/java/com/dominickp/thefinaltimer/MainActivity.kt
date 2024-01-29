@@ -12,6 +12,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.dominickp.thefinaltimer.ui.theme.TheFinalTimerTheme
 import android.util.Log
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.MaterialTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +27,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 var timer: CountDownTimer? = null
 
 @Composable
@@ -41,7 +46,6 @@ fun WorkoutTimer() {
             "Work" -> {
                 backgroundColor = Color.Green
                 val workSeconds = workTime.toIntOrNull() ?: 0
-//                timerText = workTime
                 timer = createTimer(
                     duration = (workSeconds + 1) * 1000L,
                     onTick = { timerText = it }, // Display seconds only
@@ -52,6 +56,7 @@ fun WorkoutTimer() {
                     }
                 ).start()
             }
+
             "Rest" -> {
                 backgroundColor = Color.Blue
                 val restSeconds = restTime.toIntOrNull() ?: 0
@@ -69,6 +74,7 @@ fun WorkoutTimer() {
                     }
                 ).start()
             }
+
             "DONE!!!" -> {
                 backgroundColor = Color.White
             }
@@ -81,7 +87,11 @@ fun WorkoutTimer() {
         color = backgroundColor
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = if (timerState == "Workout Timer") "Workout Timer" else "$timerState: $timerText")
+            Text(
+                text = if (timerState == "Workout Timer") "Workout Timer" else "$timerState: $timerText",
+                fontSize = 32.sp
+//                style = MaterialTheme.typography.h1
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             if (timerState == "Workout Timer") {
@@ -105,7 +115,9 @@ fun WorkoutTimer() {
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Text(text = "Interval: $currentInterval")
+            Text(
+                text = "Interval: $currentInterval", fontSize = 32.sp
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = {
