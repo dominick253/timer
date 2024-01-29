@@ -11,19 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.dominickp.thefinaltimer.ui.theme.TheFinalTimerTheme
-import androidx.compose.ui.tooling.preview.Preview
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             TheFinalTimerTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    WorkoutTimer()
-                }
+                WorkoutTimer()
             }
         }
     }
@@ -31,86 +25,100 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun WorkoutTimer() {
-    var workTime by remember { mutableStateOf(0) }
-    var restTime by remember { mutableStateOf(0) }
-    var intervals by remember { mutableStateOf(0) }
-    var currentInterval by remember { mutableStateOf(0) }
+    var workTime by remember { mutableStateOf("") }
+    var restTime by remember { mutableStateOf("") }
+    var intervals by remember { mutableStateOf("") }
+    var currentInterval by remember { mutableStateOf(1) }
     var timerState by remember { mutableStateOf("Workout Timer") }
     var backgroundColor by remember { mutableStateOf(Color.White) }
     var timerText by remember { mutableStateOf("") }
     var timer: CountDownTimer? = null
 
     LaunchedEffect(key1 = currentInterval, key2 = timerState) {
-        if (currentInterval <= intervals && (workTime > 0 || restTime > 0)) {
-            when (timerState) {
-                "Work" -> {
-                    backgroundColor = Color.Green
-                    timer = object : CountDownTimer(workTime * 1000L, 1000) {
-                        override fun onTick(millisUntilFinished: Long) {
-                            timerText = "Work: ${millisUntilFinished / 1000}s"
-                        }
-
-                        override fun onFinish() {
-                            // Play rest sound here
-                            timerState = "Rest"
-                        }
-                    }.start()
+        timer?.cancel()
+        when (timerState) {
+            "Work" -> {
+                backgroundColor = Color.Green
+                val workSeconds = workTime.toIntOrNull() ?: 0
+                timer = createTimer(workSeconds * 1000L) {
+                    timerState = "Rest"
                 }
-                "Rest" -> {
-                    backgroundColor = Color.Blue
-                    timer = object : CountDownTimer(restTime * 1000L, 1000) {
-                        override fun onTick(millisUntilFinished: Long) {
-                            timerText = "Rest: ${millisUntilFinished / 1000}s"
-                        }
-
-                        override fun onFinish() {
-                            if (currentInterval < intervals) {
-                                // Play work sound here
-                                currentInterval++
-                                timerState = "Work"
-                            } else {
-                                // Play finished sound here
-                                timerState = "DONE!!!"
-                                backgroundColor = Color.White
-                            }
-                        }
-                    }.start()
+            }
+            "Rest" -> {
+                backgroundColor = Color.Blue
+                val restSeconds = restTime.toIntOrNull() ?: 0
+                timer = createTimer(restSeconds * 1000L) {
+                    if (currentInterval < (intervals.toIntOrNull() ?: 0)) {
+                        currentInterval++
+                        timerState = "Work"
+                    } else {
+                        timerState = "DONE!!!"
+                        backgroundColor = Color.White
+                    }
                 }
-                else -> Unit
+            }
+            "DONE!!!" -> {
+                backgroundColor = Color.White
             }
         }
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = timerState, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(16.dp))
-        // Text fields and other UI elements here...
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = backgroundColor
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = if (timerState == "Workout Timer") "Workout Timer" else "$timerState: $timerText")
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Row {
-            Button(onClick = {
-                currentInterval = 1
-                timerState = "Work"
-                // Play work sound here
-            }) {
-                Text("Start")
+            if (timerState == "Workout Timer") {
+                TextField(
+                    value = workTime,
+                    onValueChange = { workTime = it },
+                    label = { Text("Work Time (sec)") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = restTime,
+                    onValueChange = { restTime = it },
+                    label = { Text("Rest Time (sec)") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = intervals,
+                    onValueChange = { intervals = it },
+                    label = { Text("Intervals") }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
             }
-            Spacer(modifier = Modifier.width(16.dp))
+
+            Text(text = "Interval: $currentInterval")
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(onClick = {
-                timer?.cancel()
-                currentInterval = 0
-                timerState = "Workout Timer"
-                backgroundColor = Color.White
+                if (timerState == "Workout Timer") {
+                    currentInterval = 1
+                    timerState = "Work"
+                } else {
+                    timer?.cancel()
+                    currentInterval = 1
+                    timerState = "Workout Timer"
+                    backgroundColor = Color.White
+                }
             }) {
-                Text("Stop")
+                Text(if (timerState == "Workout Timer") "Start" else "Reset")
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun WorkoutTimerPreview() {
-    TheFinalTimerTheme {
-        WorkoutTimer()
+fun createTimer(duration: Long, onFinish: () -> Unit): CountDownTimer {
+    return object : CountDownTimer(duration, 1000) {
+        override fun onTick(millisUntilFinished: Long) {
+        }
+
+        override fun onFinish() {
+            onFinish()
+        }
     }
 }
