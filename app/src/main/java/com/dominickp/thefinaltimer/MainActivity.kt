@@ -40,28 +40,39 @@ fun WorkoutTimer() {
             "Work" -> {
                 backgroundColor = Color.Green
                 val workSeconds = workTime.toIntOrNull() ?: 0
-                timer = createTimer(workSeconds * 1000L) {
-                    timerState = "Rest"
-                }
+                timer = createTimer(
+                    duration = workSeconds * 1000L,
+                    onTick = { timerText = it },
+                    onFinish = {
+                        timerState = "Rest"
+                        timerText = ""
+                    }
+                ).start()
             }
             "Rest" -> {
                 backgroundColor = Color.Blue
                 val restSeconds = restTime.toIntOrNull() ?: 0
-                timer = createTimer(restSeconds * 1000L) {
-                    if (currentInterval < (intervals.toIntOrNull() ?: 0)) {
-                        currentInterval++
-                        timerState = "Work"
-                    } else {
-                        timerState = "DONE!!!"
-                        backgroundColor = Color.White
+                timer = createTimer(
+                    duration = restSeconds * 1000L,
+                    onTick = { timerText = it },
+                    onFinish = {
+                        if (currentInterval < (intervals.toIntOrNull() ?: 0)) {
+                            currentInterval++
+                            timerState = "Work"
+                            timerText = ""
+                        } else {
+                            timerState = "DONE!!!"
+                            backgroundColor = Color.White
+                        }
                     }
-                }
+                ).start()
             }
             "DONE!!!" -> {
                 backgroundColor = Color.White
             }
         }
     }
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -112,9 +123,14 @@ fun WorkoutTimer() {
     }
 }
 
-fun createTimer(duration: Long, onFinish: () -> Unit): CountDownTimer {
+fun createTimer(duration: Long, onTick: (String) -> Unit, onFinish: () -> Unit): CountDownTimer {
     return object : CountDownTimer(duration, 1000) {
         override fun onTick(millisUntilFinished: Long) {
+            val secondsLeft = millisUntilFinished / 1000
+            val minutes = secondsLeft / 60
+            val seconds = secondsLeft % 60
+            val formattedTime = String.format("%02d:%02d", minutes, seconds)
+            onTick(formattedTime)
         }
 
         override fun onFinish() {
@@ -122,3 +138,4 @@ fun createTimer(duration: Long, onFinish: () -> Unit): CountDownTimer {
         }
     }
 }
+
