@@ -40,8 +40,9 @@ fun WorkoutTimer() {
             "Work" -> {
                 backgroundColor = Color.Green
                 val workSeconds = workTime.toIntOrNull() ?: 0
+//                timerText = workTime
                 timer = createTimer(
-                    duration = workSeconds * 1000L,
+                    duration = (workSeconds + 1) * 1000L,
                     onTick = { timerText = it }, // Display seconds only
                     onFinish = {
                         timerState = "Rest"
@@ -54,8 +55,8 @@ fun WorkoutTimer() {
                 backgroundColor = Color.Blue
                 val restSeconds = restTime.toIntOrNull() ?: 0
                 timer = createTimer(
-                    duration = restSeconds * 1000L,
-                    onTick = { timerText = it }, // Display seconds only
+                    duration = (restSeconds + 1) * 1000L,
+                    onTick = { timerText = it },
                     onFinish = {
                         if (currentInterval < (intervals.toIntOrNull() ?: 0)) {
                             timerState = "Work"
@@ -110,10 +111,9 @@ fun WorkoutTimer() {
                 if (timerState == "Workout Timer") {
                     currentInterval = 0
                     timerState = "Work"
-                    timerText = workTime // Set initial timer text to the full workTime
                 } else {
                     timer?.cancel()
-                    currentInterval = 1
+                    currentInterval = 0
                     timerState = "Workout Timer"
                     backgroundColor = Color.White
                 }
@@ -128,7 +128,7 @@ fun createTimer(duration: Long, onTick: (String) -> Unit, onFinish: () -> Unit):
     return object : CountDownTimer(duration, 1000) {
         override fun onTick(millisUntilFinished: Long) {
             val secondsLeft = millisUntilFinished / 1000
-            val formattedTime = "${(secondsLeft % 60)}" // Extract seconds and add "s" suffix
+            val formattedTime = "${(secondsLeft % 60)}"
             onTick(formattedTime)
         }
 
